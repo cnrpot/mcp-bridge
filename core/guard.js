@@ -108,17 +108,19 @@ async function confirm(command, labels, cwd) {
   const preview = String(command).replace(/\s+/g, " ").trim();
   const shown = preview.length > 400 ? `${preview.slice(0, 400)}…` : preview;
 
-  const answer = await Promise.race([
+  let timer;
+  try{const answer = await Promise.race([
     host.window.showWarningMessage(
-      `远程 AI 请求执行一条高风险命令\n\n命中：${labels.join(" · ")}\n目录：${cwd}\n\n${shown}`,
+      `远程 AI 请求执行命令\n\n命中：${labels.join(" · ")}\n目录：${cwd}\n\n${shown}`,
       { modal: true },
       "允许一次",
       "拒绝"
     ),
-    new Promise((resolve) => setTimeout(() => resolve(undefined), CONFIRM_TIMEOUT_MS)),
+    new Promise((resolve) => {timer=setTimeout(() => resolve(undefined), CONFIRM_TIMEOUT_MS);timer.unref?.();}),
   ]);
 
   return answer === "允许一次";
+  }finally{clearTimeout(timer);}
 }
 
 module.exports = { scan, confirm, PATTERNS };

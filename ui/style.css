@@ -5,3 +5,5 @@
 
 /* Compact wordmark fits the sidebar at the minimum window width. */
 .brand{font-size:18px;letter-spacing:-.4px}.brand span{font-size:7px;letter-spacing:1.4px}
+
+#approvalMode{width:100%;padding:11px;border:1px solid #d9e2e6;border-radius:10px;background:#fff;color:#17333c;font:inherit}.mode-description{font-size:12px;line-height:1.8;color:#627580;min-height:44px}.full-access{background:#fff0de!important;color:#985109!important;border:1px solid #efc994;padding:7px 12px;border-radius:20px}.update-card{margin-top:20px}.update-actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}#updateProgress{width:100%;height:10px;accent-color:#167e6e}.switch:disabled{opacity:.6;cursor:not-allowed}

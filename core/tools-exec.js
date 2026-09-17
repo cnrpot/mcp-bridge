@@ -256,7 +256,7 @@ async function runGuarded({ command, cwd, wait = true, timeoutMs } = {}) {
 
   const text = String(command);
   require("./policy").ensureAllowed("run_command");
-  const risks = require("./runtime").config.commandConfirm ? ["命令执行确认（命令具备当前用户的系统权限）"] : guard.scan(text);
+  const risks = require('./approval').commandRisks(text);
   if (risks.length && !(await guard.confirm(text, risks, scope.displayPath(resolvedCwd)))) {
     throw new Error(
       `[user refused] This command matches high-risk patterns (${risks.join(

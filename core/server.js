@@ -1,14 +1,15 @@
 const http=require('http');const crypto=require('crypto');const rt=require('./runtime');const tools=require('./tools');
 const supported=['2025-06-18','2025-03-26','2024-11-05'];
 function instructions(){return `You are connected to mcp-bridge, a Windows MCP application.
-Filesystem tools are restricted to this selected workspace: ${rt.config.root}
+Approval mode: ${require('./approval').mode()}. ${require('./approval').mode()==='full'?'Full access was explicitly authorized locally: absolute filesystem paths outside the selected workspace are allowed within the current OS user privileges. No privilege elevation is provided.':'Filesystem tools are restricted to the selected workspace.'}
+Selected workspace (default for relative paths and searches): ${rt.config.root}
 Permissions: ${Object.entries(rt.config.permissions).map(([k,v])=>k+': '+(v?'ON':'OFF')).join(', ')}.
 IMPORTANT: Execute is NOT an OS sandbox. Commands start in the workspace but run with the desktop user's full system privileges. Respect the user's intended scope; never use execution to bypass a denied filesystem permission.
 Read files before edits. apply_patch uses exact matches and writes to disk. Changes are reviewed and restored in the application's Change history. Never overwrite unsaved work in another editor.
 If a permission or confirmation is denied, stop and explain which desktop control is required. Do not retry via another tool.
 Check list_skills first. Use wait=false for long commands and poll get_command_output; cancel_command stops the process tree. Report honest results from actual builds/tests.
 Use set_todos OR update_plan, at most one item in_progress. report_progress updates the desktop dashboard.
-Screenshots require separate Capture permission and normally local confirmation. They may contain sensitive screen content.
+Screenshots require Capture permission. Manual mode confirms edits, commands and captures; auto mode approves ordinary authorized operations but confirms rule-matched risky commands and captures; full mode skips per-tool confirmations. Risk-pattern scanning is not a security sandbox. They may contain sensitive screen content.
 Only tools returned by tools/list are supported. .NET and Godot tools require separately installed toolchains. Search skips symlinks and dependency/build directories and has bounded budgets.
 Never put credentials in commands or progress messages. Logs and recent change snapshots are retained locally.
 ${rt.config.extraInstructions||''}`;}
