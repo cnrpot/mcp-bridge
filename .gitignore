@@ -1,0 +1,26 @@
+node_modules/
+release/
+.verification/
+vendor/*.exe
+*.log
+
+# Private configuration, credentials and local runtime state
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.pfx
+*.p12
+settings.json
+credentials.json
+/history/
+/jobs/
+/network/
+*.local
+
+# Local build/test artifacts
+SOURCE_MANIFEST.sha256
+coverage/
+.DS_Store
+Thumbs.db

@@ -1,0 +1,719 @@
+{
+  "read_files": {
+    "name": "read_files",
+    "description": "Read exact UTF-8 text from files inside the selected workspace. Read before editing. Maximum 2 MiB per file.",
+    "inputSchema": {
+      "type": "object",
+      "required": [
+        "paths"
+      ],
+      "properties": {
+        "paths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "File paths, relative to the workspace root or absolute inside it."
+        }
+      }
+    }
+  },
+  "read_image": {
+    "name": "read_image",
+    "description": "Read an image file and actually see it - screenshots, UI mockups, diagrams, photos. The pixels are returned as an MCP image block, so you can describe or reason about what is in the picture rather than only its metadata. Supported formats: png, jpg, jpeg, gif, webp.",
+    "inputSchema": {
+      "type": "object",
+      "required": [
+        "path"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "Image path, relative to the workspace root or absolute inside it."
+        }
+      }
+    }
+  },
+  "list_directory": {
+    "name": "list_directory",
+    "description": "List the immediate contents of one directory - directories first, then files. Use this to look at a single level; use find_files when you want to match patterns across the whole tree.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "Directory to list. Defaults to the workspace root."
+        },
+        "show_hidden": {
+          "type": "boolean",
+          "description": "Include dotfiles and dotfolders. Default false."
+        },
+        "max_entries": {
+          "type": "number",
+          "description": "Default 300, max 2000."
+        }
+      }
+    }
+  },
+  "apply_patch": {
+    "name": "apply_patch",
+    "description": "Exact file edits in the selected workspace. User confirmation and local change history support review and restoration.",
+    "inputSchema": {
+      "type": "object",
+      "required": [
+        "file_path"
+      ],
+      "properties": {
+        "file_path": {
+          "type": "string",
+          "description": "Target file, relative to the workspace root or absolute inside it."
+        },
+        "edits": {
+          "type": "array",
+          "description": "List of exact-text replacements, applied in order.",
+          "items": {
+            "type": "object",
+            "required": [
+              "old_text",
+              "new_text"
+            ],
+            "properties": {
+              "old_text": {
+                "type": "string",
+                "description": "Exact existing text, including indentation. Must match exactly once."
+              },
+              "new_text": {
+                "type": "string",
+                "description": "Replacement text. Use an empty string to delete."
+              }
+            }
+          }
+        },
+        "content": {
+          "type": "string",
+          "description": "Full file content. Creates the file when it does not exist, otherwise replaces everything."
+        }
+      }
+    }
+  },
+  "find_files": {
+    "name": "find_files",
+    "description": "List files by glob pattern, for example **/*.ts or src/**/*.json. Use this to discover structure instead of guessing paths.",
+    "inputSchema": {
+      "type": "object",
+      "required": [
+        "glob"
+      ],
+      "properties": {
+        "glob": {
+          "type": "string",
+          "description": "Glob pattern, for example **/*.js"
+        },
+        "exclude": {
+          "type": "string",
+          "description": "Optional exclude glob; defaults to node_modules, .git, dist, out and build"
+        },
+        "max_results": {
+          "type": "number",
+          "description": "Default 200, max 1000."
+        }
+      }
+    }
+  },
+  "search_files": {
+    "name": "search_files",
+    "description": "Raw text or regular expression search across the workspace, returning file, line number and the matching line. Use this for exact strings; use the lsp tool for symbols, definitions and references.",
+    "inputSchema": {
+      "type": "object",
+      "required": [
+        "query"
+      ],
+      "properties": {
+        "query": {
+          "type": "string",
+          "description": "Text or regular expression to search for."
+        },
+        "is_regex": {
+          "type": "boolean",
+          "description": "Treat query as a regular expression. Default false."
+        },
+        "is_case_sensitive": {
+          "type": "boolean",
+          "description": "Default false."
+        },
+        "include": {
+          "type": "string",
+          "description": "Optional include glob, for example src/**/*.ts"
+        },
+        "max_results": {
+          "type": "number",
+          "description": "Default 200, max 1000."
+        }
+      }
+    }
+  },
+  "list_skills": {
+    "name": "list_skills",
+    "description": "List all agent skills, architecture rules, and guidelines defined in the workspace (.agents/skills, .codex/skills, etc.). Always check this first when starting a task.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    }
+  },
+  "read_skill": {
+    "name": "read_skill",
+    "description": "Read the full instruction markdown of a specific skill or one of its resource files.",
+    "inputSchema": {
+      "type": "object",
+      "required": [
+        "skill_id"
+      ],
+      "properties": {
+        "skill_id": {
+          "type": "string",
+          "description": "The skill identifier (id or name returned by list_skills)."
+        },
+        "resource_path": {
+          "type": "string",
+          "description": "Optional relative path inside the skill package (e.g. 'references/rules.md'). If omitted, reads the main SKILL.md."
+        }
+      }
+    }
+  },
+  "run_command": {
+    "name": "run_command",
+    "description": "Run a shell command inside the workspace (PowerShell on Windows; the POSIX system shell elsewhere). By default it waits for completion and returns the combined output plus the exit code; pass wait=false for servers, watchers or anything long-running, and you get a command_id back immediately. Poll with get_command_output, stop with cancel_command.",
+    "inputSchema": {
+      "type": "object",
+      "required": [
+        "command"
+      ],
+      "properties": {
+        "command": {
+          "type": "string",
+          "description": "Command line to execute."
+        },
+        "cwd": {
+          "type": "string",
+          "description": "Working directory. Defaults to the workspace root."
+        },
+        "wait": {
+          "type": "boolean",
+          "description": "Wait for the command to finish. Defaults to true."
+        },
+        "timeout_ms": {
+          "type": "number",
+          "description": "When waiting, give up after this many ms (default 85000, max 600000). The command keeps running and its command_id is returned."
+        }
+      }
+    }
+  },
+  "get_command_output": {
+    "name": "get_command_output",
+    "description": "Read output from a command started by run_command. Supports offset cursor for reliable incremental polling, full tail reading, or default incremental delta. Never queued, so it works even while other tools are busy.",
+    "inputSchema": {
+      "type": "object",
+      "required": [
+        "command_id"
+      ],
+      "properties": {
+        "command_id": {
+          "type": "string",
+          "description": "Id returned by run_command."
+        },
+        "offset": {
+          "type": "number",
+          "description": "Optional byte offset cursor to read from. Enables exact paginated reading."
+        },
+        "max_chars": {
+          "type": "number",
+          "description": "Max characters to return when reading with offset (default 32000)."
+        },
+        "full": {
+          "type": "boolean",
+          "description": "Return the whole retained tail instead of only the new part."
+        }
+      }
+    }
+  },
+  "list_jobs": {
+    "name": "list_jobs",
+    "description": "List all background commands and jobs, their running state, exit code, elapsed duration, and command line. Useful to check status after reconnection.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number",
+          "description": "Max jobs to return (default 20)."
+        }
+      }
+    }
+  },
+  "send_command_input": {
+    "name": "send_command_input",
+    "description": "Write to the stdin of a command started with wait=false. Use this for interactive prompts (y/n confirmations, menu choices, REPL input) and for any program that keeps reading from stdin. Read what the program printed first with get_command_output, so you answer the prompt it actually showed.",
+    "inputSchema": {
+      "type": "object",
+      "required": [
+        "command_id",
+        "input"
+      ],
+      "properties": {
+        "command_id": {
+          "type": "string",
+          "description": "Id returned by run_command."
+        },
+        "input": {
+          "type": "string",
+          "description": "Text to send. A newline is appended unless raw is true."
+        },
+        "raw": {
+          "type": "boolean",
+          "description": "Send exactly as given, with no trailing newline."
+        }
+      }
+    }
+  },
+  "cancel_command": {
+    "name": "cancel_command",
+    "description": "Stop a running command and its child processes. Never queued, so it can always stop a runaway command. Returns the output produced so far.",
+    "inputSchema": {
+      "type": "object",
+      "required": [
+        "command_id"
+      ],
+      "properties": {
+        "command_id": {
+          "type": "string",
+          "description": "Id returned by run_command."
+        }
+      }
+    }
+  },
+  "report_progress": {
+    "name": "report_progress",
+    "description": "Report what you are doing right now so the user can watch it in the editor: a short message, an optional phase label, and an optional completion percentage. Use set_todos for the durable task list and this for live status between tool calls. Call it when you start a meaningfully different step, not before every tool call.",
+    "inputSchema": {
+      "type": "object",
+      "required": [
+        "message"
+      ],
+      "properties": {
+        "message": {
+          "type": "string",
+          "description": "One line describing what is happening now."
+        },
+        "phase": {
+          "type": "string",
+          "description": "Short phase label, for example 读取, 修改, 测试, 完成."
+        },
+        "percent": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Optional completion estimate for the current job."
+        },
+        "todo_id": {
+          "type": "string",
+          "description": "Optional todo id from set_todos to attach this update to."
+        }
+      }
+    }
+  },
+  "set_todos": {
+    "name": "set_todos",
+    "description": "Publish the durable task list for the current job so the user can watch progress in the editor status bar. Send the full ordered list whenever the plan changes, keep at most one item in_progress, and use stable ids. Send an empty list to clear.",
+    "inputSchema": {
+      "type": "object",
+      "required": [
+        "todos"
+      ],
+      "properties": {
+        "todos": {
+          "type": "array",
+          "description": "Complete ordered snapshot of the task list.",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "title",
+              "status"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Stable id, reused across updates."
+              },
+              "title": {
+                "type": "string",
+                "description": "Goal-level task title."
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "pending",
+                  "in_progress",
+                  "completed"
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "update_plan": {
+    "name": "update_plan",
+    "description": "Plan updater for clients that speak the Codex plan format ({ plan: [{ step, status }] }). It publishes to exactly the same task card as set_todos, so a Codex-style agent does not need a translation layer and the user sees one consistent list.",
+    "inputSchema": {
+      "type": "object",
+      "required": [
+        "plan"
+      ],
+      "properties": {
+        "explanation": {
+          "type": "string",
+          "description": "Optional short reason for the change."
+        },
+        "plan": {
+          "type": "array",
+          "description": "Complete ordered plan snapshot.",
+          "items": {
+            "type": "object",
+            "required": [
+              "step",
+              "status"
+            ],
+            "properties": {
+              "step": {
+                "type": "string",
+                "description": "Goal-level step title."
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "pending",
+                  "in_progress",
+                  "completed"
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "dotnet_detect": {
+    "name": "dotnet_detect",
+    "description": "Report which .NET SDKs and runtimes are installed on this machine, and which project files exist in the workspace. Call this first when a build fails in a way that smells like a missing toolchain.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    }
+  },
+  "dotnet_build": {
+    "name": "dotnet_build",
+    "description": "Compile a .NET project and return structured diagnostics: every error and warning with file, line, column and code (e.g. src/Program.cs:12:5 CS0103 ...). Use this instead of run_command for compilation - the parsed list is what lets you jump straight to the broken line, fix it, and build again.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project": {
+          "type": "string",
+          "description": "Path to a .csproj/.sln/.fsproj. Defaults to the solution, or the first project found."
+        },
+        "configuration": {
+          "type": "string",
+          "description": "Debug (default) or Release."
+        },
+        "timeout_ms": {
+          "type": "number",
+          "description": "Build timeout in ms (default 600000)."
+        }
+      }
+    }
+  },
+  "dotnet_test": {
+    "name": "dotnet_test",
+    "description": "Run the test suite for a .NET project and return the result summary plus any failing tests. Uses the project's own test framework (xunit / nunit / mstest) through `dotnet test`.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project": {
+          "type": "string",
+          "description": "Path to a test .csproj/.sln. Defaults to the solution, or the first project found."
+        },
+        "filter": {
+          "type": "string",
+          "description": "Optional test filter, e.g. FullyQualifiedName~PlayerTests."
+        },
+        "timeout_ms": {
+          "type": "number",
+          "description": "Test timeout in ms (default 600000)."
+        }
+      }
+    }
+  },
+  "dotnet_run": {
+    "name": "dotnet_run",
+    "description": "Run a .NET project. Pass wait=false for a GUI app, server or anything long-running: you get a command_id back immediately, then poll get_command_output and stop it with cancel_command. Use wait=true only for console tools that exit on their own.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project": {
+          "type": "string",
+          "description": "Path to the .csproj to run. Defaults to the first project found."
+        },
+        "args": {
+          "type": "string",
+          "description": "Arguments passed through to the program."
+        },
+        "configuration": {
+          "type": "string",
+          "description": "Debug (default) or Release."
+        },
+        "wait": {
+          "type": "boolean",
+          "description": "Wait for exit. Default true; pass false for anything long-running."
+        },
+        "timeout_ms": {
+          "type": "number",
+          "description": "When waiting, give up after this many ms (default 120000)."
+        }
+      }
+    }
+  },
+  "dotnet_publish": {
+    "name": "dotnet_publish",
+    "description": "Publish a .NET project to a folder (framework-dependent by default). Set self_contained=true to bundle the runtime, and runtime to target a specific RID such as win-x64.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project": {
+          "type": "string",
+          "description": "Path to the .csproj. Defaults to the first project found."
+        },
+        "output": {
+          "type": "string",
+          "description": "Output folder, relative to the workspace root. Defaults to ./publish."
+        },
+        "configuration": {
+          "type": "string",
+          "description": "Release (default for publish) or Debug."
+        },
+        "runtime": {
+          "type": "string",
+          "description": "Target runtime identifier, e.g. win-x64 / linux-x64."
+        },
+        "self_contained": {
+          "type": "boolean",
+          "description": "Bundle the .NET runtime into the output."
+        },
+        "timeout_ms": {
+          "type": "number",
+          "description": "Publish timeout in ms (default 600000)."
+        }
+      }
+    }
+  },
+  "dotnet_restore": {
+    "name": "dotnet_restore",
+    "description": "Run `dotnet restore` for a project. Useful when a build fails on missing packages or a stale lock file, before reaching for heavier fixes.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project": {
+          "type": "string",
+          "description": "Path to a .csproj/.sln. Defaults to the solution, or the first project found."
+        },
+        "timeout_ms": {
+          "type": "number",
+          "description": "Restore timeout in ms (default 600000)."
+        }
+      }
+    }
+  },
+  "godot_detect": {
+    "name": "godot_detect",
+    "description": "Report the Godot version found on this machine, the project.godot in this workspace, and the export presets declared for it. Call this before running or exporting, so you know which engine build and which preset names you are working with.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    }
+  },
+  "godot_import": {
+    "name": "godot_import",
+    "description": "Run Godot's headless asset import for the project. Do this after adding or changing assets, and always before the first run on a fresh checkout - otherwise the engine reports missing resources even though the files are right there.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project": {
+          "type": "string",
+          "description": "Project folder or project.godot path. Defaults to the one found in the workspace."
+        },
+        "timeout_ms": {
+          "type": "number",
+          "description": "Import timeout in ms (default 900000)."
+        }
+      }
+    }
+  },
+  "godot_run": {
+    "name": "godot_run",
+    "description": "Launch the Godot project. For a real playable window leave wait=false, then take a screenshot with the screenshot tool and read output with get_command_output. For a headless smoke run (CI-style, no window) pass headless=true and quit_after=<frames>.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project": {
+          "type": "string",
+          "description": "Project folder or project.godot path. Defaults to the one found in the workspace."
+        },
+        "headless": {
+          "type": "boolean",
+          "description": "Run without a window (no rendering). Pair with quit_after."
+        },
+        "quit_after": {
+          "type": "number",
+          "description": "Quit automatically after this many frames. Useful for a quick headless check."
+        },
+        "scene": {
+          "type": "string",
+          "description": "Optional scene to run instead of the main scene, e.g. res://test/TestScene.tscn."
+        },
+        "wait": {
+          "type": "boolean",
+          "description": "Wait for exit. Default false - a game window does not exit on its own."
+        },
+        "timeout_ms": {
+          "type": "number",
+          "description": "When waiting, give up after this many ms (default 120000)."
+        }
+      }
+    }
+  },
+  "godot_export": {
+    "name": "godot_export",
+    "description": "Export the project to a runnable build using one of its export presets. Call godot_detect first to see the preset names - the name must match export_presets.cfg exactly. Runs headless, so no editor window is needed.",
+    "inputSchema": {
+      "type": "object",
+      "required": [
+        "preset"
+      ],
+      "properties": {
+        "preset": {
+          "type": "string",
+          "description": "Export preset name, exactly as written in export_presets.cfg (e.g. Windows Desktop)."
+        },
+        "output": {
+          "type": "string",
+          "description": "Output file path, relative to the workspace root (e.g. build/game.exe)."
+        },
+        "project": {
+          "type": "string",
+          "description": "Project folder or project.godot path. Defaults to the one found in the workspace."
+        },
+        "debug": {
+          "type": "boolean",
+          "description": "Export a debug build instead of release."
+        },
+        "timeout_ms": {
+          "type": "number",
+          "description": "Export timeout in ms (default 900000)."
+        }
+      }
+    }
+  },
+  "godot_check": {
+    "name": "godot_check",
+    "description": "Run the project headless for a few frames and report any script or resource errors. This is the cheapest way to answer 'does it still load?' after edits, without opening a window or waiting for a human to click anything.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project": {
+          "type": "string",
+          "description": "Project folder or project.godot path. Defaults to the one found in the workspace."
+        },
+        "frames": {
+          "type": "number",
+          "description": "How many frames to run before quitting (default 120, roughly two seconds)."
+        },
+        "scene": {
+          "type": "string",
+          "description": "Optional scene to load instead of the main scene."
+        },
+        "timeout_ms": {
+          "type": "number",
+          "description": "Hard timeout in ms (default 180000)."
+        }
+      }
+    }
+  },
+  "screenshot": {
+    "name": "screenshot",
+    "description": "Capture the whole desktop (all monitors) as a JPEG image you can actually look at, downscaled to 1600px wide. Use it to see the current state of a running game, a rendered UI, an editor, or a build window. Requires the Capture permission; by default the user approves each shot.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "reason": {
+          "type": "string",
+          "description": "Short note shown to the user explaining why you want the screenshot."
+        }
+      }
+    }
+  },
+  "screenshot_window": {
+    "name": "screenshot_window",
+    "description": "Capture a single window, matched by a regular expression against its title (e.g. \"Godot\" or \"Link|Game\"). The window is brought to the foreground first, which is what makes this work for GPU-rendered windows. If nothing matches, the error lists the open window titles so you can correct the pattern.",
+    "inputSchema": {
+      "type": "object",
+      "required": [
+        "window"
+      ],
+      "properties": {
+        "window": {
+          "type": "string",
+          "description": "Regular expression matched against window titles, case-insensitive."
+        },
+        "reason": {
+          "type": "string",
+          "description": "Short note shown to the user explaining why you want the screenshot."
+        }
+      }
+    }
+  },
+  "run_and_capture": {
+    "name": "run_and_capture",
+    "description": "The loop for anything visual: start a command (a game, a GUI app, a dev server), wait for its window, screenshot it, and return both the program output and the image in one call. Requires BOTH Execute and Capture permissions. Set keep_running=true to leave it up for more screenshots; otherwise it is stopped before returning. This is usually better than run_command + screenshot, because you cannot forget to clean up.",
+    "inputSchema": {
+      "type": "object",
+      "required": [
+        "command"
+      ],
+      "properties": {
+        "command": {
+          "type": "string",
+          "description": "Command to launch, exactly as run_command would take it."
+        },
+        "cwd": {
+          "type": "string",
+          "description": "Working directory, relative to the workspace root."
+        },
+        "window": {
+          "type": "string",
+          "description": "Regex for the window to capture. Omit to capture the whole desktop."
+        },
+        "wait_ms": {
+          "type": "number",
+          "description": "How long to let it start before looking (default 4000)."
+        },
+        "keep_running": {
+          "type": "boolean",
+          "description": "Leave the process running so you can screenshot again later. Default false."
+        },
+        "reason": {
+          "type": "string",
+          "description": "Short note shown to the user explaining what you are doing."
+        }
+      }
+    }
+  }
+}

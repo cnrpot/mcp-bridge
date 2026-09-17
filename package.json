@@ -1,0 +1,66 @@
+{
+  "name": "mcp-bridge",
+  "version": "1.1.1",
+  "description": "Windows MCP workspace control center",
+  "author": "MCPGO",
+  "license": "MIT",
+  "main": "main/index.cjs",
+  "scripts": {
+    "start": "node scripts/start.cjs",
+    "test": "node --test test/*.test.cjs",
+    "check": "node test/check.cjs",
+    "pack": "electron-builder --win dir --x64",
+    "dist": "electron-builder --win nsis zip --x64"
+  },
+  "dependencies": {
+    "ajv": "8.20.0",
+    "minimatch": "10.2.4"
+  },
+  "devDependencies": {
+    "electron": "44.4.1",
+    "electron-builder": "26.15.3"
+  },
+  "build": {
+    "appId": "app.mcpgo.desktop",
+    "productName": "mcp-bridge",
+    "asar": true,
+    "directories": {
+      "output": "release/mcp-bridge-1.1.1"
+    },
+    "files": [
+      "main/**",
+      "core/**",
+      "ui/**",
+      "assets/**",
+      "package.json",
+      "LICENSE.txt",
+      "THIRD_PARTY_NOTICES.md"
+    ],
+    "extraResources": [
+      {
+        "from": "vendor/cloudflared.exe",
+        "to": "bin/cloudflared.exe"
+      },
+      {
+        "from": "vendor/cloudflared-LICENSE.txt",
+        "to": "bin/cloudflared-LICENSE.txt"
+      }
+    ],
+    "win": {
+      "icon": "assets/icon.ico",
+      "target": [
+        "nsis",
+        "zip"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "artifactName": "mcp-bridge-${version}-Setup-${arch}.${ext}"
+    },
+    "artifactName": "mcp-bridge-${version}-${arch}.${ext}"
+  }
+}
